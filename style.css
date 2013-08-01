@@ -1,0 +1,51 @@
+table {
+  border-collapse: collapse;
+  border: 3px solid #000;
+  margin-bottom: 1em;
+}
+
+td {
+  width: 32px;
+  height: 21px;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+#legend {
+  float: right;
+  border: 3px solid #000;
+  margin: 0;
+  padding: 1em;
+  list-style: none;
+}
+
+li span {
+  display: inline-block;
+  width: 32px;
+  height: 21px;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  border: 1px solid #000;
+}
+
+li {
+  margin: 0.5em;
+  padding: 0;
+}
+
+.empty { background-color: #000; border: 3px solid #000 }
+
+.r01, .r03, .r05, .r07, .r09, .r11, .r13, .r15 { border-top: 3px solid #000; }
+.r02, .r03, .r06, .r07, .r10, .r11, .r14, .r15 { border-right: 3px solid #000; }
+.r04, .r05, .r06, .r07, .r12, .r13, .r14, .r15 { border-bottom: 3px solid #000; }
+.r08, .r09, .r10, .r11, .r12, .r13, .r14, .r15 { border-left: 3px solid #000; }
+
+.plains   { background-color: #dfd; }
+.forest   { background-color: #bdb; }
+.mountain { background-color: #fdd; }
+.desert   { background-color: #ffd; }
+.tundra   { background-color: #ddf; }
+.dungeon  { background-color: #bbd; }
