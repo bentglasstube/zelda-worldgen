@@ -169,21 +169,17 @@ sub generate {
 sub levels { shift->{options}{levels} }
 sub hearts { shift->{options}{hearts} }
 
-use constant THRESHOLD => 0.25;
-
 sub get_biome {
-  my ($self, $alt, $temp, $rain)  = @_;
+  my ($self, $alt, $rain)  = @_;
 
-  if ($alt < - THRESHOLD) {
-    return 'ocean' if $temp < 0;
+  if ($alt < -0.25) {
     return 'desert' if $rain < 0;
     return 'swamp';
-  } elsif ($alt < THRESHOLD) {
+  } elsif ($alt < 0.25) {
     return 'plains' if $rain < 0;
     return 'forest';
   } else {
-    return 'mountain' if $temp > 0;
-    return 'taiga' if $rain > 0;
+    return 'mountain' if $rain < 0;
     return 'tundra';
   }
 }

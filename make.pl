@@ -8,7 +8,7 @@ use Mapper::Zelda::Overworld;
 print '<!doctype html><head><title>Zelda-like world generator</title><link rel="stylesheet" href="style.css"></head><body>';
 
 print '<ul id="legend">';
-printf '<li><span class="%s">&nbsp;</span> %s</li>', $_, ucfirst $_ for qw(ocean desert swamp plains forest tundra taiga mountain);
+printf '<li><span class="%s">&nbsp;</span> %s</li>', $_, ucfirst $_ for qw(desert swamp plains forest mountain tundra);
 print '<li><span>S</span> Start Position</li>';
 print '<li><span>H</span> Heart</li>';
 print '<li><span>L#</span> Dungeon Level Entrance</li>';
