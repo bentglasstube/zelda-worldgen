@@ -13,6 +13,8 @@ printf '<li><span class="%s">&nbsp;</span> %s</li>', $_, ucfirst $_ for qw(plain
 print '<li><span>S</span> Start Position</li>';
 print '<li><span>H</span> Heart</li>';
 print '<li><span>L#</span> Dungeon Level Entrance</li>';
+print '<li><span>T</span> Level Treasure</li>';
+print '<li><span>B</span> Level Boss</li>';
 print '</ul>';
 
 say STDERR "Generate overworld";

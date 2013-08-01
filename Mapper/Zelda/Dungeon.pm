@@ -9,7 +9,7 @@ sub generate {
 
   $options->{height} //= 8;
   $options->{width} //= 8;
-  $options->{openness} //= 0.50;
+  $options->{openness} //= 0.40;
 
   my $self = bless { options => $options }, $class;
 
