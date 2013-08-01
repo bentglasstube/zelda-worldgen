@@ -10,7 +10,7 @@ td {
   margin: 0;
   padding: 0;
   text-align: center;
-  border: 1px solid #ccc;
+  border: 1px solid #444;
 }
 
 #legend {
@@ -43,9 +43,12 @@ li {
 .r04, .r05, .r06, .r07, .r12, .r13, .r14, .r15 { border-bottom: 3px solid #000; }
 .r08, .r09, .r10, .r11, .r12, .r13, .r14, .r15 { border-left: 3px solid #000; }
 
-.plains   { background-color: #dfd; }
-.forest   { background-color: #bdb; }
-.mountain { background-color: #fdd; }
-.desert   { background-color: #ffd; }
-.tundra   { background-color: #ddf; }
-.dungeon  { background-color: #bbd; }
+.ocean    { background-color: #44b }
+.desert   { background-color: #fd8 }
+.swamp    { background-color: #b48 }
+.plains   { background-color: #bfb }
+.forest   { background-color: #8b8 }
+.tundra   { background-color: #eef }
+.taiga    { background-color: #bdd }
+.mountain { background-color: #bbb }
+

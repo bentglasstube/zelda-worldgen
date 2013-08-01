@@ -1,6 +1,150 @@
 package Mapper::Zelda::Overworld;
 
+use strict;
+use warnings;
+
+use Mapper::Zelda::PerlinNoise;
+
 use base 'Mapper::Zelda::Map';
+
+use constant TOP    => 1;
+use constant RIGHT  => 2;
+use constant BOTTOM => 4;
+use constant LEFT   => 8;
+
+use List::Util qw'shuffle';
+
+sub _make_room {
+  my ($base, $mask, $openness) = @_;
+
+  if ($mask) {
+    for (TOP, RIGHT, BOTTOM, LEFT) {
+      if ($mask & $_) {
+        if (rand() < $openness) {
+          $base |= $_;
+        } else {
+          $base &= 15 - $_;
+        }
+      }
+    }
+
+    if ($base == 15) {
+      for (TOP, RIGHT, BOTTOM, LEFT) {
+        if ($mask & $_) {
+          $base &= 15 - $_;
+          last;
+        }
+      }
+    }
+  }
+
+  return $base;
+}
+
+sub generate_walls {
+  my ($self) = @_;
+
+  my $x = int($self->width / 2);
+  my $y = 0;
+
+  $self->set_room($x, $y, _make_room(BOTTOM, 15 - BOTTOM, 0.25), 'S');
+
+  my @stack = ();
+  while (1) {
+    my @ways = ();
+    my $room = $self->get_room($x, $y)->{walls};
+
+    push @ways, TOP    unless $room & TOP    or $self->has_room($x, $y + 1);
+    push @ways, RIGHT  unless $room & RIGHT  or $self->has_room($x + 1, $y);
+    push @ways, BOTTOM unless $room & BOTTOM or $self->has_room($x, $y - 1);
+    push @ways, LEFT   unless $room & LEFT   or $self->has_room($x - 1, $y);
+
+    if (@ways == 0) {
+      return unless @stack;
+
+      my $cell = pop @stack;
+      $x = $cell->[0];
+      $y = $cell->[1];
+    } else {
+      push @stack, [$x, $y] if @ways > 1;
+      @ways = shuffle @ways;
+      my $way = $ways[0];
+      my $mask = 15;
+      my $base = 0;
+
+      if    ($way == TOP)    { $y++; }
+      elsif ($way == RIGHT)  { $x++; }
+      elsif ($way == BOTTOM) { $y--; }
+      elsif ($way == LEFT)   { $x--; }
+
+      if ($x == 0) {
+        $base |= LEFT;
+        $mask &= 15 - LEFT
+      } elsif ($x == $self->width - 1) {
+        $base |= RIGHT;
+        $mask &= 15 - RIGHT
+      }
+
+      if ($y == 0) {
+        $base |= BOTTOM;
+        $mask &= 15 - BOTTOM
+      } elsif ($y == $self->height - 1) {
+        $base |= TOP;
+        $mask &= 15 - TOP
+      }
+
+      if (defined (my $below = $self->get_room($x, $y - 1))) {
+        $mask &= 15 - BOTTOM;
+        $base |= ($below->{walls} & TOP ? BOTTOM : 0);
+      }
+
+      if (defined (my $above = $self->get_room($x, $y + 1))) {
+        $mask &= 15 - TOP;
+        $base |= ($above->{walls} & BOTTOM ? TOP : 0);
+      }
+
+      if (defined (my $left  = $self->get_room($x - 1, $y))) {
+        $mask &= 15 - LEFT;
+        $base |= ($left->{walls} & RIGHT ? LEFT : 0);
+      }
+
+      if (defined (my $right = $self->get_room($x + 1, $y))) {
+        $mask &= 15 - RIGHT;
+        $base |= ($right->{walls} & LEFT ? RIGHT : 0);
+      }
+
+      $self->set_room($x, $y, _make_room($base, $mask, 0.25));
+    }
+  }
+}
+
+sub place_evenly {
+  my ($self, @items) = @_;
+
+  my $seg = int(sqrt(@items));
+
+  my $sw = int($self->width / $seg);
+  my $sh = int($self->height / $seg);
+
+  @items = shuffle @items;
+
+  for my $section (0 .. $seg * $seg - 1) {
+    my $i = shift @items or next;
+
+    while (1) {
+      my $x = int($section % $seg) * $sw + int($sw * rand);
+      my $y = int($section / $seg) * $sh + int($sh * rand);
+
+      my $room = $self->get_room($x, $y) or next;
+      next if $room->{special};
+
+      $room->{special} = $i;
+      last;
+    }
+  }
+
+  $self->place_evenly(@items) if @items;
+}
 
 sub generate {
   my ($class, $options) = @_;
@@ -11,78 +155,71 @@ sub generate {
   $options->{height} //= 21;
   $options->{levels} //= 13;
   $options->{hearts} //= 7;
-  $options->{smoothing} //= 3;
-  $options->{openness} //= 0.25;
 
   my $self = bless { options => $options }, $class;
 
   $self->generate_walls;
-  $self->smooth_biomes for 1 .. $self->smoothing;
+  $self->generate_biomes;
   $self->place_evenly(map sprintf('L%u', $_), 1 .. $self->levels);
   $self->place_evenly(('H') x $self->hearts);
 
   return $self;
 }
 
-sub random_biome {
-  my ($self, $x, $y) = @_;
+sub levels { shift->{options}{levels} }
+sub hearts { shift->{options}{hearts} }
 
-  my $z = $y / $self->height;
-  my $r = rand();
+use constant THRESHOLD => 0.25;
 
-  if ($z < 0.6) {
-    return 'forest'   if $r < 0.15;
-    return 'plains'   if $r < 0.55;
-    return 'mountain' if $r < 0.65;
-    return 'desert';
-  } elsif ($z < 0.85) {
-    return 'forest'   if $r < 0.35;
-    return 'mountain' if $r < 0.85;
-    return 'tundra';
+sub get_biome {
+  my ($self, $alt, $temp, $rain)  = @_;
+
+  if ($alt < - THRESHOLD) {
+    return 'ocean' if $temp < 0;
+    return 'desert' if $rain < 0;
+    return 'swamp';
+  } elsif ($alt < THRESHOLD) {
+    return 'plains' if $rain < 0;
+    return 'forest';
   } else {
-    return 'mountain' if $r < 0.45;
+    return 'mountain' if $temp > 0;
+    return 'taiga' if $rain > 0;
     return 'tundra';
   }
 }
 
-sub smooth_biomes {
+use constant SCALE => 8;
+
+sub room_html {
+  my ($self, $room) = @_;
+
+  return sprintf '<td class="r%02u %s">%s</td>', $room->{walls}, $room->{biome}, $room->{special} || '&nbsp;';
+}
+
+sub generate_biomes {
   my ($self) = @_;
+
+  my $alt  = Mapper::Zelda::PerlinNoise->new(SCALE, SCALE);
+  my $temp = Mapper::Zelda::PerlinNoise->new(SCALE, SCALE);
+  my $rain = Mapper::Zelda::PerlinNoise->new(SCALE, SCALE);
+
+  my $threshold = 0.1;
 
   for my $y (0 .. $self->height - 1) {
-    for my $x (0 .. $self->width - 1) {
-      if (my $room = $self->get_room($x, $y)) {
-        my %weights = ();
-        my $count = 0;
-        for my $dy ($y - 1 .. $y + 1) {
-          for my $dx ($x - 1 .. $x + 1) {
-            my $dr = $self->get_room($dx, $dy) or next;
-            $weights{$dr->{biome}}++;
-            $count++;
-          }
-        }
+    my $yy = SCALE * $y / $self->height;
 
-        foreach (keys %weights) {
-          $room->{biome} = $_ and last if $weights{$_} > 4;
-          $room->{biome} = $_ if $weights{$_} > 3;
-        }
-      }
+    for my $x (0 .. $self->width - 1) {
+      my $room = $self->get_room($x, $y) or next;
+
+      my $xx = SCALE * $x / $self->width;
+
+      my $a = $alt->value($xx, $yy);
+      my $t = $temp->value($xx, $yy);
+      my $r = $rain->value($xx, $yy);
+
+      $room->{biome} = $self->get_biome($a, $t, $r);
     }
   }
-}
-
-sub levels {
-  my ($self) = @_;
-  return $self->{options}{levels};
-}
-
-sub hearts {
-  my ($self) = @_;
-  return $self->{options}{hearts};
-}
-
-sub smoothing {
-  my ($self) = @_;
-  return $self->{options}{smoothing};
 }
 
 1;
