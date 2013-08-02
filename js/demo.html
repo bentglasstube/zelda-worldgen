@@ -24,16 +24,56 @@
       </div>
     </div>
 
-    <div id="world"></div>
-    <p id="progress"></p>
+    <div class="content">
+
+      <form class="form-inline">
+        <fieldset>
+          <legend>Options</legend>
+          <label for="width">Width</label>
+          <input type="text" class="form-control" id="width" value="32">
+          <label for="height">Height</label>
+          <input type="text" class="form-control" id="height" value="21">
+          <label for="openness">Openness</label>
+          <input type="text" class="form-control" id="openness" value="50">
+          <label for="delay">Delay</label>
+          <input type="text" class="form-control" id="delay" value="10">
+          <button type="button" class="btn btn-primary" onclick="generate()">Generate</button>
+          <button type="button" class="btn btn-danger" onclick="cancel()">Cancel</button>
+        </fieldset>
+      </form>
+
+      <p id="progress"></p>
+      <div id="world"></div>
+
+    </div>
 
     <script src="//code.jquery.com/jquery.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
     <script src="world.js"></script>
 
     <script>
-      var world = generate_world(32, 21);
-      world.render(document.getElementById('world'));
+      var world = create_world('world');
+
+      function generate() {
+        var width = document.getElementById('width').value;
+        var height = document.getElementById('height').value;
+        var openness = document.getElementById('openness').value;
+        var delay = document.getElementById('delay').value;
+
+        world.cancel();
+
+        world.width = width;
+        world.height = height;
+        world.openness = openness / 100;
+        world.delay = delay;
+
+        world.generate();
+      }
+
+      function cancel() {
+        world.cancel();
+      }
     </script>
+
   </body>
 </html>

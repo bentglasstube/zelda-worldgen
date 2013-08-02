@@ -3,11 +3,22 @@ body {
 }
 
 #world {
-  border: 1px solid #bbb;
-  margin: 1em;
-  padding: 1em;
+  margin-top: 1em;
   overflow: auto;
   text-align: center;
+}
+
+#progress {
+  margin-top: 1em;
+}
+
+.content {
+  margin: 1em;
+}
+
+form.form-inline input {
+  width: 5em;
+  margin-right: 5em;
 }
 
 table.map {

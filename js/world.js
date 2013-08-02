@@ -1,21 +1,36 @@
-var generate_world = function(width, height) {
+var create_world = function(target) {
   var self = {
-    width: width,
-    height: height,
+    width: 32,
+    height: 21,
+    openness: 0.5,
+    target: target,
+    delay: 10,
   };
 
+  var roomNumber = 0;
   var new_room = function(value) {
     var self = {
+      id: 'r' + (roomNumber++),
       walls: value,
       special: '',
     };
 
     self.add = function(d) {
       this.walls = this.walls | d;
+      this.update();
     };
 
     self.remove = function(d) {
       this.walls = this.walls & (15 - d);
+      this.update();
+    };
+
+    self.update = function() {
+      var td = document.getElementById(this.id);
+      if (td) {
+        td.className = 'r' + this.walls;
+        td.innerHTML = this.special;
+      }
     };
 
     return self;
@@ -48,18 +63,20 @@ var generate_world = function(width, height) {
     }
   };
 
-  self.render = function(elem) {
+  self.render = function() {
     var html = '<table class="map"><tbody>';
     for (var y = this.height - 1; y >= 0; --y) {
       html += '<tr>';
       for (var x = 0; x < this.width; ++x) {
-        html += '<td class="r' + this.rooms[y][x].walls + '">' + this.rooms[y][x].special + '</td>';
+        var room = this.rooms[y][x];
+        html += '<td id="' + room.id + '" class="r' + room.walls + '">' + room.special + '</td>';
       }
       html += '</tr>';
     }
 
     html += '</tbody></table>';
 
+    var elem = document.getElementById(this.target);
     elem.innerHTML = html;
   };
 
@@ -82,6 +99,8 @@ var generate_world = function(width, height) {
         this.x = Math.floor(this.width / 2);
         this.y = Math.floor(this.height / 2);
         this.rooms[this.y][this.x].special = 'S';
+
+        this.render();
 
         this.iterate('maze');
 
@@ -132,7 +151,7 @@ var generate_world = function(width, height) {
 
         var walls = this.rooms[this.y][this.x].walls;
         for (var d = 1; d <= 8; d = d * 2) {
-          if (walls & d && Math.random() < 0.5) this.destroy_wall(this.x, this.y, d);
+          if (walls & d && Math.random() < this.openness) this.destroy_wall(this.x, this.y, d);
         }
 
         if (this.x == this.width - 2) {
@@ -153,19 +172,27 @@ var generate_world = function(width, height) {
       case 'done':
         document.getElementById('progress').innerHTML = 'Done';
         break;
-    }
 
-    this.render(document.getElementById('world'));
+      case 'cancel':
+        document.getElementById('progress').innerHTML = 'Cancelled';
+        break;
+    }
   };
 
   self.iterate = function(stage) {
     if (stage) this.stage = stage;
 
     var self = this;
-    setTimeout(function() { self._iterate() }, 10);
+    setTimeout(function() { self._iterate() }, this.delay);
   }
 
-  self.iterate('init');
+  self.generate = function() {
+    this.iterate('init');
+  }
+
+  self.cancel = function() {
+    this.iterate('cancel');
+  }
 
   return self;
 }
