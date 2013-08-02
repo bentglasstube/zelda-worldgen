@@ -125,8 +125,8 @@ var create_world = function(target) {
             this.y = cell.y;
             this._iterate();
           } else {
-            this.x = 1;
-            this.y = 1;
+            this.x = 0;
+            this.y = 0;
             this.iterate('empty');
           }
         } else {
@@ -150,16 +150,15 @@ var create_world = function(target) {
         document.getElementById('progress').innerHTML = 'Destroying walls';
 
         var walls = this.rooms[this.y][this.x].walls;
-        for (var d = 1; d <= 8; d = d * 2) {
-          if (walls & d && Math.random() < this.openness) this.destroy_wall(this.x, this.y, d);
-        }
+        if (this.y > 0 && walls & BOTTOM && Math.random() < this.openness) this.destroy_wall(this.x, this.y, BOTTOM);
+        if (this.x > 0 && walls & LEFT && Math.random() < this.openness) this.destroy_wall(this.x, this.y, LEFT);
 
-        if (this.x == this.width - 2) {
-          if (this.y == this.height - 2) {
+        if (this.x == this.width - 1) {
+          if (this.y == this.height - 1) {
             this.iterate('done');
           } else {
             this.y++;
-            this.x = 1;
+            this.x = 0;
             this.iterate();
           }
         } else {
