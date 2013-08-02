@@ -1,0 +1,45 @@
+body {
+  padding-top: 50px;
+}
+
+#world {
+  border: 1px solid #bbb;
+  margin: 1em;
+  padding: 1em;
+  overflow: auto;
+  text-align: center;
+}
+
+table.map {
+  border-collapse: collapse;
+  border: 3px solid #000;
+  margin-bottom: 1em;
+}
+
+table.map td {
+  width: 32px;
+  height: 21px;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.empty { background-color: #000; border: 3px solid #000 }
+
+table.map td.r1, table.map td.r3, table.map td.r5, table.map td.r7, table.map td.r9, table.map td.r11, table.map td.r13, table.map td.r15 { border-top: 3px solid #000; }
+table.map td.r2, table.map td.r3, table.map td.r6, table.map td.r7, table.map td.r10, table.map td.r11, table.map td.r14, table.map td.r15 { border-right: 3px solid #000; }
+table.map td.r4, table.map td.r5, table.map td.r6, table.map td.r7, table.map td.r12, table.map td.r13, table.map td.r14, table.map td.r15 { border-bottom: 3px solid #000; }
+table.map td.r8, table.map td.r9, table.map td.r10, table.map td.r11, table.map td.r12, table.map td.r13, table.map td.r14, table.map td.r15 { border-left: 3px solid #000; }
+
+table.map td.r15 {
+  background-color: #000;
+}
+
+.desert   { background-color: #ffa }
+.swamp    { background-color: #daf }
+.plains   { background-color: #dfa }
+.forest   { background-color: #ad8 }
+.mountain { background-color: #fdd }
+.tundra   { background-color: #ccf }
+
