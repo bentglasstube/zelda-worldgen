@@ -34,6 +34,7 @@ table.map td {
   padding: 0;
   text-align: center;
   border: 1px solid #ddd;
+  transition: all 250ms;
 }
 
 .empty { background-color: #000; border: 3px solid #000 }
